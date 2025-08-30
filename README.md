@@ -1,73 +1,55 @@
-# Welcome to your Lovable project
+# CollabSpark - Real-time Collaborative Code Editor
 
-## Project info
+A beautiful, real-time collaborative code editor built with React, Monaco Editor, and Tailwind CSS.
 
-**URL**: https://lovable.dev/projects/55b95556-8db9-4481-9807-e10d663eeb1a
+## Features
 
-## How can I edit this code?
+- Monaco Editor integration for a professional coding experience
+- Real-time code execution with live output
+- Collaborative room-based system
+- Modern, responsive UI with Tailwind CSS
+- Support for multiple programming languages
+- Beautiful animations and transitions
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use Lovable**
+**Development**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/55b95556-8db9-4481-9807-e10d663eeb1a) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+**Build**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run build
+npm run preview
+```
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Technologies Used
 
 This project is built with:
 
 - Vite
-- TypeScript
 - React
-- shadcn-ui
+- Monaco Editor
 - Tailwind CSS
+- Framer Motion
+- shadcn/ui components
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/55b95556-8db9-4481-9807-e10d663eeb1a) and click on Share -> Publish.
+```
+src/
+├── components/
+│   ├── Editor.jsx          # Main code editor component
+│   ├── Home.jsx            # Landing page component
+│   └── ui/                 # Essential UI components
+├── App.jsx                 # Main application component
+└── main.jsx               # Application entry point
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Development
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+The project runs on port 8080 by default. You can access it at `http://localhost:8080` after running `npm run dev`.
