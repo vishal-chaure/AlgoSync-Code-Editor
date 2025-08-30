@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Full Black Theme - Professional Code Editor */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 95%;
+    
+    --card: 0 0% 3%;
+    --card-foreground: 0 0% 95%;
+    
+    --popover: 0 0% 2%;
+    --popover-foreground: 0 0% 95%;
+    
+    --primary: 200 100% 60%;
+    --primary-foreground: 0 0% 0%;
+    
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 90%;
+    
+    --muted: 0 0% 5%;
+    --muted-foreground: 0 0% 60%;
+    
+    --accent: 120 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 95%;
+    
+    --border: 0 0% 12%;
+    --input: 0 0% 8%;
+    --ring: 200 100% 60%;
+    
+    --radius: 0.75rem;
+    
+    /* Code Editor Specific */
+    --editor-bg: 0 0% 1%;
+    --editor-border: 0 0% 15%;
+    --output-bg: 0 0% 2%;
+    --success: 120 100% 50%;
+    --warning: 45 100% 60%;
+    --error: 0 75% 55%;
+    
+    /* Gradients for depth */
+    --gradient-primary: linear-gradient(135deg, hsl(200 100% 60%), hsl(220 100% 70%));
+    --gradient-accent: linear-gradient(135deg, hsl(120 100% 50%), hsl(140 100% 60%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 2%), hsl(0 0% 4%));
+    
+    /* Shadows */
+    --shadow-glow: 0 0 30px hsl(200 100% 60% / 0.3);
+    --shadow-accent-glow: 0 0 25px hsl(120 100% 50% / 0.4);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
