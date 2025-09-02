@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Code2, Users, Zap } from "lucide-react";
+import DarkVeil from '../components/ui/DarkVeil';
+import TargetCursor from '../components/ui/TargetCursor';
+
 
 const Home = ({ onNavigateToEditor }) => {
   const [roomId, setRoomId] = useState("");
@@ -29,36 +32,42 @@ const Home = ({ onNavigateToEditor }) => {
       y: 0,
       transition: {
         duration: 0.6,
-        staggerChildren: 0.1
+        staggerChildren: 0.2
       }
     }
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 }
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.7, ease: "easeOut" }
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="relative w-full min-h-screen flex items-center justify-center p-6 overflow-hidden">
+      {/* DarkVeil as full-screen background */}
+      <DarkVeil className="absolute inset-0" />
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="w-full max-w-md space-y-8"
+        className="w-full max-w-md space-y-8 z-10"
       >
+
         {/* Header */}
-        <motion.div variants={itemVariants} className="text-center space-y-4">
+        <motion.div 
+          variants={itemVariants} 
+          className="text-center space-y-4"
+        >
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            >
-              <Code2 className="h-8 w-8 text-primary" />
-            </motion.div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              CollabSpark
-            </h1>
+            <img
+              src="/algosync-logo.png"
+              alt="AlgoSync Logo"
+              className="h-24 w-36 object-contain"
+            />
           </div>
           <p className="text-muted-foreground text-lg">
             Real-time collaborative code editor
@@ -67,7 +76,7 @@ const Home = ({ onNavigateToEditor }) => {
 
         {/* Main Card */}
         <motion.div variants={itemVariants}>
-          <Card className="p-8 bg-gradient-card border-border/50 backdrop-blur-sm">
+          <Card className="p-8 bg-transperent/20 border-border/50 backdrop-blur-md">
             <div className="space-y-6">
               {/* Username Input */}
               <div className="space-y-2">
@@ -79,7 +88,7 @@ const Home = ({ onNavigateToEditor }) => {
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+                  className=" border-border text-foreground placeholder:text-muted-foreground"
                   onKeyPress={(e) => e.key === 'Enter' && roomId && handleJoinRoom()}
                 />
               </div>
@@ -94,7 +103,7 @@ const Home = ({ onNavigateToEditor }) => {
                   placeholder="Enter room ID to join"
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value.toUpperCase())}
-                  className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+                  className=" border-border text-foreground placeholder:text-muted-foreground"
                   onKeyPress={(e) => e.key === 'Enter' && roomId && handleJoinRoom()}
                 />
               </div>
@@ -156,6 +165,7 @@ const Home = ({ onNavigateToEditor }) => {
           </div>
         </motion.div>
       </motion.div>
+    
     </div>
   );
 };

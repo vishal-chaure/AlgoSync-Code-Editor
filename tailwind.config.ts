@@ -57,7 +57,7 @@ export default {
 					border: 'hsl(var(--editor-border))'
 				},
 				output: {
-					bg: 'hsl(var(--output-bg))'
+					bg: 'hsl(var(--card))'
 				},
 				success: 'hsl(var(--success))',
 				warning: 'hsl(var(--warning))',
@@ -101,5 +101,5 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar-hide")],
 } satisfies Config;

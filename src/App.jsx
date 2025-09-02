@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -6,12 +6,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Home from "./components/Home";
 import Editor from "./components/Editor";
+import DarkVeil from "./components/ui/DarkVeil";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState("home");
   const [roomData, setRoomData] = useState({ roomId: "", username: "" });
+
 
   const navigateToEditor = (roomId, username) => {
     setRoomData({ roomId, username });
@@ -29,6 +31,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <div className="min-h-screen bg-background text-foreground">
+          
           <AnimatePresence mode="wait">
             {currentPage === "home" ? (
               <motion.div

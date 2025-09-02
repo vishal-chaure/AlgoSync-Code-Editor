@@ -40,3 +40,75 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Custom scrollbar styles for the question area - completely hidden */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  width: 0 !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  width: 0 !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  width: 0 !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+/* Firefox scrollbar - hide completely */
+.custom-scrollbar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Additional hiding for all browsers */
+.custom-scrollbar {
+  overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Force hide scrollbar for all browsers */
+.custom-scrollbar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  -webkit-appearance: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+/* Alternative approach - completely remove scrollbar */
+.custom-scrollbar {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  overflow: auto !important;
+}
+
+/* Webkit specific - force hide */
+.custom-scrollbar::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-corner {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  display: none !important;
+  -webkit-appearance: none !important;
+}

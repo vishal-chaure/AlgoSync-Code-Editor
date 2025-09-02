@@ -12,7 +12,7 @@ All colors MUST be HSL.
     --background: 0 0% 0%;
     --foreground: 0 0% 95%;
     
-    --card: 0 0% 3%;
+    --card: 114 1.3% 7%;
     --card-foreground: 0 0% 95%;
     
     --popover: 0 0% 2%;
@@ -42,7 +42,7 @@ All colors MUST be HSL.
     /* Code Editor Specific */
     --editor-bg: 0 0% 1%;
     --editor-border: 0 0% 15%;
-    --output-bg: 0 0% 2%;
+    --output-bg: 114 1.3% 7%;
     --success: 120 100% 50%;
     --warning: 45 100% 60%;
     --error: 0 75% 55%;
