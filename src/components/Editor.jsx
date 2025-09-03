@@ -28,7 +28,7 @@ import { toast } from "sonner";
 // import { env } from "process";
 
 // const sidebarRef = useRef/** @type {React.MutableRefObject<ImperativePanelHandle|null>} */(null);
-const url = import.meta.env
+const ALGOSYNC_BACKEND_URL = "https://algosyncbackend-dev.up.railway.app/api";
 
 const Editor = ({ roomData, onNavigateToHome }) => {
 
@@ -52,42 +52,131 @@ const Editor = ({ roomData, onNavigateToHome }) => {
     userFullName: "",
   });
 
+  // useEffect(() => {
+  //   if (!socketRef.current) return; // ⛔ wait until socket is ready
+  
+  //   const params = new URLSearchParams(window.location.search);
+  //   const qid = params.get("question_id");
+  //   const token = params.get("token");
+  
+  //   setQid(qid);
+  //   setToken(token);
+  
+  //   const getQuestionData = async () => {
+  //     if (qid && token) {
+  //       try {
+  //         const response = await fetch(
+  //           `https://algosyncbackend-dev.up.railway.app/api/questions/${qid}`,
+  //           {
+  //             headers: {
+  //               "Content-Type": "application/json",
+  //               Authorization: `Bearer ${token}`,
+  //             },
+  //           }
+  //         );
+  
+  //         const data = await response.json();
+  //         if (!data) {
+  //           console.log("No question data found");
+  //           return;
+  //         }
+  
+  //         // map backend response
+  //         const mappedData = {
+  //           id: data._id,
+  //           title: data.title,
+  //           description: data.description,
+  //           examples: data.examples?.map((ex) => {
+  //             const lines = ex.split("\n");
+  //             return {
+  //               input: lines[0] || "",
+  //               output: lines[1] || "",
+  //               explanation: lines[2] || "",
+  //             };
+  //           }) || [],
+  //           constraints: data.constraints || [],
+  //           difficulty: data.difficulty || "",
+  //           topicTags: data.topicTags || [],
+  //           platformTag: data.platformTag || "",
+  //           platformLink: data.platformLink || "",
+  //           youtubeLink: data.youtubeLink || "",
+  //           isImportant: data.isImportant || false,
+  //           isSolved: data.isSolved || false,
+  //           savedCode: data.savedCode || "",
+  //           language: data.language || "Java",
+  //           topic: data.topic || "",
+  //           userFullName: data.userFullName || "",
+  //           createdAt: data.createdAt,
+  //           updatedAt: data.updatedAt,
+  //         };
+  
+  //         setQuestion(mappedData);
+  
+  //         // ✅ broadcast question only after socket is connected
+  //         socketRef.current.emit(ACTIONS.QUESTION_CHANGE, {
+  //           roomId: roomData.roomId,
+  //           question: mappedData,
+  //         });
+  //       } catch (error) {
+  //         console.error("Error fetching question:", error);
+  //       }
+  //     }
+  //   };
+  
+  //   getQuestionData();
+  // }, [socketRef.current, roomData.roomId]); // wait for socket
+
   useEffect(() => {
-    // Get query params from URL
-    const params = new URLSearchParams(window.location.search);
-    const qid = params.get("question_id"); // will be "1234"
-    const token = params.get("token"); // will be "1234"
-    console.log("Fetched Question ID:::", qid, "Token:", token);
-    setQid(qid);
-    setToken(token);
-    const getQuestionData = async () => {
+    const init = async () => {
+      socketRef.current = await initSocket();
+      if (!socketRef.current) return;
+  
+      socketRef.current.on("connect_error", handleErrors);
+      socketRef.current.on("connect_failed", handleErrors);
+  
+      function handleErrors(e) {
+        console.error("Socket error:", e);
+        toast.error("Socket connection failed, try again later.");
+        onNavigateToHome();
+      }
+  
+      // JOIN ROOM
+      socketRef.current.emit(ACTIONS.JOIN, {
+        roomId: roomData.roomId,
+        username: roomData.username,
+      });
+  
+      // Fetch question once socket is connected
+      const params = new URLSearchParams(window.location.search);
+      const qid = params.get("question_id");
+      const token = params.get("token");
+  
       if (qid && token) {
         try {
-          const response = await fetch(`http://localhost:5000/api/questions/${qid}`, {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`, // pass token here
-            },
-          });
-          const data = await response.json();
-          if (!data) {
-            console.log("No question data found");
-            return;
-          }
-
-          // Map backend data to structured frontend format
+          
+          const res = await fetch(`${ALGOSYNC_BACKEND_URL}/questions/${qid}`,{
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const data = await res.json();
+          if (!data) return;
+  
           const mappedData = {
             id: data._id,
             title: data.title,
             description: data.description,
-            examples: data.examples?.map((ex) => {
-              const lines = ex.split("\n");
-              return {
-                input: lines[0] || "",
-                output: lines[1] || "",
-                explanation: lines[2] || "",
-              };
-            }) || [],
+            examples:
+              data.examples?.map((ex) => {
+                const lines = ex.split("\n");
+                return {
+                  input: lines[0] || "",
+                  output: lines[1] || "",
+                  explanation: lines[2] || "",
+                };
+              }) || [],
             constraints: data.constraints || [],
             difficulty: data.difficulty || "",
             topicTags: data.topicTags || [],
@@ -103,44 +192,69 @@ const Editor = ({ roomData, onNavigateToHome }) => {
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
           };
-
+  
           setQuestion(mappedData);
-          console.log("Mapped Question Data:", mappedData);
-
-        } catch (error) {
-          console.error("Error fetching question:", error);
-          setQuestion("No question data found");
-          console.log("Question Data: No question data found");
+  
+          // ✅ Broadcast to others in the room
+          socketRef.current.emit(ACTIONS.QUESTION_CHANGE, {
+            roomId: roomData.roomId,
+            question: mappedData,
+          });
+        } catch (err) {
+          console.error("Error fetching question:", err);
         }
       }
-    }
-    getQuestionData();
-  }, []);
-
-
-
-  const questionData = {
-    title: "Two Sum",
-    description: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.",
-    examples: [
-      {
-        input: "nums = [2,7,11,15], target = 9",
-        output: "[0,1]",
-        explanation: "Because nums[0] + nums[1] == 9, we return [0, 1]."
-      },
-      {
-        input: "nums = [3,2,4], target = 6",
-        output: "[1,2]",
-        explanation: "Because nums[1] + nums[2] == 6, we return [1, 2]."
+  
+      // Listen for joined
+      socketRef.current.on(ACTIONS.JOINED, ({ clients, username, socketId }) => {
+        if (username !== roomData.username) {
+          toast.success(`${username} joined the room.`);
+        }
+        setClients(clients);
+  
+        // Sync code
+        if (codeRef.current && !codeRef.current.includes("Welcome to AlgoSync!")) {
+          socketRef.current.emit(ACTIONS.SYNC_CODE, {
+            code: codeRef.current,
+            socketId,
+          });
+        }
+  
+        // Sync question
+        if (question) {
+          socketRef.current.emit(ACTIONS.SYNC_QUESTION, {
+            socketId,
+            question,
+          });
+        }
+      });
+  
+      socketRef.current.on(ACTIONS.QUESTION_CHANGE, ({ question }) => {
+        if (question) {
+          setQuestion(question);
+          console.log("📩 Received question:", question);
+        }
+      });
+  
+      socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
+        toast.success(`${username} left the room.`);
+        setClients((prev) =>
+          prev.filter((client) => client.socketId !== socketId)
+        );
+      });
+    };
+  
+    init();
+  
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current.off(ACTIONS.JOINED);
+        socketRef.current.off(ACTIONS.DISCONNECTED);
+        socketRef.current.off(ACTIONS.QUESTION_CHANGE);
       }
-    ],
-    constraints: [
-      "2 ≤ nums.length ≤ 10⁴",
-      "-10⁹ ≤ nums[i] ≤ 10⁹",
-      "-10⁹ ≤ target ≤ 10⁹",
-      "Only one valid answer exists."
-    ]
-  };
+    };
+  }, []);
 
   const outputPanelRef = useRef(null);
 
@@ -187,89 +301,77 @@ public class Main {
     { id: "python", name: "Python", monaco: "python" }
   ];
 
-  // const questionData = {
-  //   title: "Two Sum",
-  //   description: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.",
-  //   examples: [
-  //     {
-  //       input: "nums = [2,7,11,15], target = 9",
-  //       output: "[0,1]",
-  //       explanation: "Because nums[0] + nums[1] == 9, we return [0, 1]."
-  //     },
-  //     {
-  //       input: "nums = [3,2,4], target = 6",
-  //       output: "[1,2]",
-  //       explanation: "Because nums[1] + nums[2] == 6, we return [1, 2]."
+  // // Socket.IO initialization
+  // useEffect(() => {
+  //   const init = async () => {
+  //     socketRef.current = await initSocket();
+  //     socketRef.current.on('connect_error', (err) => handleErrors(err));
+  //     socketRef.current.on('connect_failed', (err) => handleErrors(err));
+
+  //     function handleErrors(e) {
+  //       console.log('socket error', e);
+  //       toast.error('Socket connection failed, try again later.');
+  //       onNavigateToHome();
   //     }
-  //   ],
-  //   constraints: [
-  //     "2 ≤ nums.length ≤ 10⁴",
-  //     "-10⁹ ≤ nums[i] ≤ 10⁹",
-  //     "-10⁹ ≤ target ≤ 10⁹",
-  //     "Only one valid answer exists."
-  //   ]
-  // };
 
-  // Socket.IO initialization
-  useEffect(() => {
-    const init = async () => {
-      socketRef.current = await initSocket();
-      socketRef.current.on('connect_error', (err) => handleErrors(err));
-      socketRef.current.on('connect_failed', (err) => handleErrors(err));
+  //     socketRef.current.emit(ACTIONS.JOIN, {
+  //       roomId: roomData.roomId,
+  //       username: roomData.username,
+  //     });
 
-      function handleErrors(e) {
-        console.log('socket error', e);
-        toast.error('Socket connection failed, try again later.');
-        onNavigateToHome();
-      }
+  //     // Listening for joined event
+  //     socketRef.current.on(
+  //       ACTIONS.JOINED,
+  //       ({ clients, username, socketId }) => {
+  //         if (username !== roomData.username) {
+  //           toast.success(`${username} joined the room.`);
+  //           console.log(`${username} joined`);
+  //         }
+  //         setClients(clients);
 
-      socketRef.current.emit(ACTIONS.JOIN, {
-        roomId: roomData.roomId,
-        username: roomData.username,
-      });
+  //         // Send current code to the new user if we have actual code (not boilerplate)
+  //         if (codeRef.current && !codeRef.current.includes("Welcome to AlgoSync!")) {
+  //           socketRef.current.emit(ACTIONS.SYNC_CODE, {
+  //             code: codeRef.current,
+  //             socketId,
+  //           });
+  //         }
+  //       }
+  //     );
 
-      // Listening for joined event
-      socketRef.current.on(
-        ACTIONS.JOINED,
-        ({ clients, username, socketId }) => {
-          if (username !== roomData.username) {
-            toast.success(`${username} joined the room.`);
-            console.log(`${username} joined`);
-          }
-          setClients(clients);
+  //     // 🔥 Listen for question updates (from server cache or other users)
+  //     socketRef.current.on(ACTIONS.QUESTION_CHANGE, ({ question }) => {
+  //       if (question) {
+  //         setQuestion(question);
+  //         console.log("Received question from server:", question);
+  //       }
+  //     });
 
-          // Send current code to the new user if we have actual code (not boilerplate)
-          if (codeRef.current && !codeRef.current.includes("Welcome to AlgoSync!")) {
-            socketRef.current.emit(ACTIONS.SYNC_CODE, {
-              code: codeRef.current,
-              socketId,
-            });
-          }
-        }
-      );
 
-      // Listening for disconnected
-      socketRef.current.on(
-        ACTIONS.DISCONNECTED,
-        ({ socketId, username }) => {
-          toast.success(`${username} left the room.`);
-          setClients((prev) => {
-            return prev.filter(
-              (client) => client.socketId !== socketId
-            );
-          });
-        }
-      );
-    };
-    init();
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current.off(ACTIONS.JOINED);
-        socketRef.current.off(ACTIONS.DISCONNECTED);
-      }
-    };
-  }, []);
+
+  //     // Listening for disconnected
+  //     socketRef.current.on(
+  //       ACTIONS.DISCONNECTED,
+  //       ({ socketId, username }) => {
+  //         toast.success(`${username} left the room.`);
+  //         setClients((prev) => {
+  //           return prev.filter(
+  //             (client) => client.socketId !== socketId
+  //           );
+  //         });
+  //       }
+  //     );
+  //   };
+  //   init();
+  //   return () => {
+  //     if (socketRef.current) {
+  //       socketRef.current.disconnect();
+  //       socketRef.current.off(ACTIONS.JOINED);
+  //       socketRef.current.off(ACTIONS.DISCONNECTED);
+  //       socketRef.current.off(ACTIONS.QUESTION_CHANGE);
+  //     }
+  //   };
+  // }, []);
 
   const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
@@ -287,7 +389,7 @@ public class Main {
   };
 
 
-  const BASE_URL = "http://localhost:5000";
+  // const BASE_URL = "http://localhost:5000";
 
 
   const executeCode = async () => {
@@ -299,10 +401,10 @@ public class Main {
 
       let endpoint;
       switch (selectedLanguage) {
-        case "java": endpoint = `${BASE_URL}/api/run-java`; break;
-        case "cpp": endpoint = `${BASE_URL}/api/run-cpp`; break;
-        case "javascript": endpoint = `${BASE_URL}/api/run-js`; break;
-        case "python": endpoint = `${BASE_URL}/api/run-python`; break;
+        case "java": endpoint = `${ALGOSYNC_BACKEND_URL}/run-java`; break;
+        case "cpp": endpoint = `${ALGOSYNC_BACKEND_URL}/run-cpp`; break;
+        case "javascript": endpoint = `${ALGOSYNC_BACKEND_URL}/run-js`; break;
+        case "python": endpoint = `${ALGOSYNC_BACKEND_URL}/run-python`; break;
         default:
           setOutput([{ type: "error", message: "Unsupported language selected" }]);
           return;
@@ -891,16 +993,16 @@ print("Hello, AlgoSync!")
               <div>
                 <h3 className="text-xl font-bold text-primary mb-3">{question?.title}</h3>
                 <p className="text-md text-foreground leading-relaxed">{question?.description}</p>
-                
+
                 {/* Difficulty and Tags */}
                 <div className="flex flex-wrap gap-2 my-4 items-center">
                   {/* Difficulty Badge */}
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${question?.difficulty === "Easy"
-                        ? "bg-green-500/20 text-green-400"
-                        : question?.difficulty === "Medium"
-                          ? "bg-yellow-500/20 text-yellow-400"
-                          : "bg-red-500/20 text-red-400"
+                      ? "bg-green-500/20 text-green-400"
+                      : question?.difficulty === "Medium"
+                        ? "bg-yellow-500/20 text-yellow-400"
+                        : "bg-red-500/20 text-red-400"
                       }`}
                   >
                     {question?.difficulty || "No Question"}
